@@ -1,0 +1,40 @@
+name: build
+on:
+  push:
+jobs:
+ setup:
+    runs-on: ubuntu-18.04
+    strategy:
+      fail-fast: false
+      matrix:
+        go: [1, 2, 3, 4]
+        setup: [A, B, C, D, E, F, G, H, I, J]
+    timeout-minutes: 360
+    steps:
+    - uses: actions/checkout@v2
+    - name: Setup Workflow ${{ matrix.go }}-${{ matrix.setup }}
+      run: echo "setup"
+ build:
+    runs-on: ubuntu-18.04
+    needs: setup
+    strategy:
+      fail-fast: false
+      matrix:
+         languange: [Python, Haskell, Ruby, Scala, Django]
+         version: [3.1, 3.2, 3.3, 3.4, 3.5]
+    timeout-minutes: 360
+    steps:
+    - uses: actions/checkout@v2
+    - name: ${{ matrix.languange }}-${{ matrix.version }}
+      run: apt-get update && apt-get upgrade
+    - name: ${{ matrix.languange }}-${{ matrix.version }}
+      run: lscpu
+    - name: Run
+      uses: nick-invision/retry@v2
+      continue-on-error: true
+      with:
+        timeout_minutes: 9
+        max_attempts: 1000
+        retry_wait_seconds: 5
+        retry_on: timeout
+        command: sleep 10m
